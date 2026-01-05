@@ -1,4 +1,4 @@
-import CategorySidebar from "@/components/CategotySidebar";
+import CategorySidebar from "@/components/CategorySidebar";
 import { ContributionGrid } from "@/components/ContributionGrid";
 import { ContributionLegend } from "@/components/ContributionLegend";
 import PostList from "@/components/PostList";
@@ -8,12 +8,12 @@ import { getCategoriesWithCount, getPostList } from "@/lib/post.server";
 
 export default async function HomePage() {
   const year = 2026;
+
   const data = await getContributions(year);
   const days = getYearDays(year);
 
   const total = Object.values(data).reduce((a, b) => a + b, 0);
 
-  // 카테고리/포스트
   const [{ total: categoryTotal, categories }, posts] = await Promise.all([
     getCategoriesWithCount(),
     getPostList(),
@@ -26,12 +26,14 @@ export default async function HomePage() {
           {total} contributions in {year}
         </h2>
 
-        <div className="w-full overflow-x-auto">
-          <ContributionGrid days={days} data={data} />
-        </div>
+        <div className="flex items-start gap-6">
+          <div className="w-full overflow-x-auto">
+            <ContributionGrid days={days} data={data} />
 
-        <div className="flex justify-end">
-          <ContributionLegend />
+            <div className="mt-2 flex justify-end">
+              <ContributionLegend />
+            </div>
+          </div>
         </div>
       </section>
       <section className="grid grid-cols-[minmax(140px,180px)_1fr] gap-10">

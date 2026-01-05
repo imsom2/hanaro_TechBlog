@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
@@ -43,16 +44,38 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <nav className="flex h-16 items-center border-b px-6">
-              <div className="text-xl font-semibold">TechLog</div>
+              <Link href="/" className="text-xl font-semibold hover:opacity-80">
+                TechLog
+              </Link>
+
               <div className="ml-auto flex items-center gap-4">
-                {session?.user ? (
+                {session?.user?.isadmin && (
                   <>
-                    <span className="text-sm">{session.user.name}</span>
-                    <UserProfile data={session} />
+                    <Link href="/admin" className="text-sm font-medium">
+                      회원관리
+                    </Link>
+                    <Link
+                      href="/write"
+                      className="rounded-full border px-4 py-2 text-sm font-medium"
+                    >
+                      새 글 작성
+                    </Link>
                   </>
+                )}
+
+                <button
+                  type="button"
+                  aria-label="search"
+                  className="rounded-full p-2 hover:bg-muted"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+
+                {session?.user ? (
+                  <UserProfile data={session} />
                 ) : (
                   <Link href="/sign" className="text-sm">
-                    sign
+                    sign in
                   </Link>
                 )}
               </div>
