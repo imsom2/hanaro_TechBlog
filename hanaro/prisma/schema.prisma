@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Category {
+  id           Int            @id @default(autoincrement()) @db.UnsignedTinyInt
+  title        String         @unique(map: "uq_category_title") @db.VarChar(31)
+  PostCategory PostCategory[]
+}
+
+model Comment {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime  @default(now()) @db.Timestamp(0)
+  content       String    @db.Text
+  user          Int       @db.UnsignedInt
+  post          Int       @db.UnsignedInt
+  comment       Int       @db.UnsignedInt
+  User          User      @relation(fields: [user], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_1")
+  Post          Post      @relation(fields: [post], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_2")
+  Comment       Comment   @relation("CommentToComment", fields: [comment], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_3")
+  other_Comment Comment[] @relation("CommentToComment")
+
+  @@index([comment], map: "fk_Comment_comment")
+  @@index([post], map: "fk_Comment_post")
+  @@index([user], map: "fk_Comment_user")
+}
+
+model Likes {
+  user Int  @db.UnsignedInt
+  post Int  @db.UnsignedInt
+  User User @relation(fields: [user], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "likes_ibfk_1")
+  Post Post @relation(fields: [post], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "likes_ibfk_2")
+
+  @@id([user, post])
+  @@index([post], map: "fk_Like_post")
+}
+
+model Post {
+  id           Int            @id @default(autoincrement()) @db.UnsignedInt
+  createdAt    DateTime       @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime       @default(now()) @db.Timestamp(0)
+  title        String         @db.VarChar(31)
+  content      String?        @db.Text
+  Comment      Comment[]
+  Likes        Likes[]
+  PostCategory PostCategory[]
+}
+
+model PostCategory {
+  post     Int      @db.UnsignedInt
+  category Int      @db.UnsignedTinyInt
+  Post     Post     @relation(fields: [post], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "postcategory_ibfk_1")
+  Category Category @relation(fields: [category], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "postcategory_ibfk_2")
+
+  @@id([post, category])
+  @@index([category], map: "fk_PostCategory_category")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model StopWord {
+  value String? @db.VarChar(31)
+
+  @@ignore
+}
+
+model User {
+  id      Int       @id @default(autoincrement()) @db.UnsignedInt
+  name    String    @db.VarChar(31)
+  email   String    @unique(map: "uniq_User_email") @db.VarChar(255)
+  image   String?   @db.VarChar(255)
+  passwd  String?   @db.VarChar(256)
+  isadmin Boolean   @default(false)
+  Comment Comment[]
+  Likes   Likes[]
+}
