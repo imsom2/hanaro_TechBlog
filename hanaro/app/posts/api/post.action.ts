@@ -43,3 +43,19 @@ export async function getPostList() {
     },
   });
 }
+
+export async function getPostDetail(postId: number) {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    include: {
+      PostCategory: { include: { Category: true } },
+      Comment: {
+        include: { User: true },
+        orderBy: { createdAt: "asc" },
+      },
+      Likes: true,
+    },
+  });
+
+  return post;
+}

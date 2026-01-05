@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { use } from "react";
-import RegistForm from "../../../components/login/RegistForm";
+import RegistForm from "../../../components/sign/RegistForm";
 
 export const metadata: Metadata = {
   title: "Hana Sign Up",
@@ -24,7 +24,7 @@ export default function SignUpPage({
       <div className="mt-4 text-center text-sm text-muted-foreground">
         이미 계정이 있나요?{" "}
         <Link
-          href="/sign"
+          href="/sign/in"
           className="font-medium text-blue-600 hover:underline"
         >
           로그인

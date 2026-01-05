@@ -1,7 +1,6 @@
 import NextAuth, { AuthError } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Github from "next-auth/providers/github";
-import Google from "next-auth/providers/google";
 import { prisma } from "./prisma";
 import { comparePassword } from "./validator";
 
@@ -25,12 +24,14 @@ export const {
         },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string | undefined;
-        const passwd = credentials?.passwd as string | undefined;
-        if (!email || !passwd) return null;
+        const email = (credentials?.email as string) ?? "";
+        const passwd = (credentials?.passwd as string) ?? "";
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.passwd) return null;
+
+        if (!user) return null;
+
+        if (!user.passwd) return null;
 
         const ok = await comparePassword(passwd, user.passwd);
         if (!ok) return null;
@@ -44,7 +45,6 @@ export const {
         };
       },
     }),
-    Google,
     Github,
   ],
   callbacks: {
@@ -101,13 +101,12 @@ export const {
         session.user.image = String(token.image || token.picture);
         session.user.isadmin = token.isadmin;
       }
-      // console.log('🚀 ~ session:', session);
       return session;
     },
   },
   pages: {
-    signIn: "/sign",
-    error: "/sign/error",
+    signIn: "/sign/in",
+    error: "/sign/in",
   },
   session: {
     strategy: "jwt",

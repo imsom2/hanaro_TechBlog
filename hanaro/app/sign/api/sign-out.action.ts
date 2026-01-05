@@ -3,5 +3,5 @@
 import { signOut } from "@/lib/auth";
 
 export const logout = async () => {
-  await signOut({ redirectTo: "/sign" });
+  await signOut({ redirectTo: "/sign/in" });
 };

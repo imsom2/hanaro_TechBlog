@@ -4,8 +4,6 @@ import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { useReducer } from "react";
 import { logout } from "@/app/sign/api/sign-out.action";
-// import Image from 'next/image';
-// import d from '@/public/profile_dummy.png';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";

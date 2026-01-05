@@ -4,8 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { SessionProvider } from "next-auth/react";
 import { use } from "react";
+import UserProfile from "@/components/sign/UserProfile";
 import { ThemeProvider } from "@/components/theme-provider";
-import UserProfile from "@/components/UserProfile";
 import { auth } from "@/lib/auth";
 import "./globals.css";
 
@@ -74,7 +74,7 @@ export default function RootLayout({
                 {session?.user ? (
                   <UserProfile data={session} />
                 ) : (
-                  <Link href="/sign" className="text-sm">
+                  <Link href="/sign/in" className="text-sm">
                     sign in
                   </Link>
                 )}

@@ -5,7 +5,7 @@ export default function PostList({ posts }: { posts: any[] }) {
     <section className="space-y-8">
       {posts.map((post) => (
         <article key={post.id} className="border-b pb-8">
-          <Link href={`/post/${post.id}`}>
+          <Link href={`/posts/${post.id}`}>
             <h3 className="text-lg font-semibold hover:underline">
               {post.title}
             </h3>

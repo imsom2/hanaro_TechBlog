@@ -1,7 +1,7 @@
 import {
   getCategoriesWithCount,
   getPostList,
-} from "@/app/post/api/post.server";
+} from "@/app/posts/api/post.action";
 import { ContributionGrid } from "@/components/grass/ContributionGrid";
 import { ContributionLegend } from "@/components/grass/ContributionLegend";
 import CategorySidebar from "@/components/post/CategorySidebar";

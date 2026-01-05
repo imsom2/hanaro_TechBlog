@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { use } from "react";
 import { loginGithub } from "@/app/sign/api/sign-in.action";
-import { GithubLoginButton } from "../../components/login/GithubLoginButton";
-import SignForm from "../../components/login/SignForm";
+import { GithubLoginButton } from "@/components/sign/GithubLoginButton";
+import SignForm from "@/components/sign/SignForm";
 
 export const metadata: Metadata = {
   title: "Hana Login Page",

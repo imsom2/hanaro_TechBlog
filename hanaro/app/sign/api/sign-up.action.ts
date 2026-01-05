@@ -54,11 +54,11 @@ export const regist = async (
       select: { id: true, name: true, email: true, isadmin: true },
     });
 
-    redirect("/sign");
+    redirect("/sign/in");
   } catch (err) {
     let message = JSON.stringify(err);
     if (isErrorWithMessage(err)) {
-      if (err.message === "NEXT_REDIRECT") redirect("/sign");
+      if (err.message === "NEXT_REDIRECT") redirect("/sign/in");
       message = err.message;
     }
     return { error: { email: message }, data };
