@@ -26,7 +26,6 @@ export default function UserProfile({ data }: { data: Session }) {
 
   return (
     <Comp.comp open={isOpen} onOpenChange={toggleOpen}>
-      {/* <Image src={d} width={200} height={200} alt="xx" /> */}
       <Comp.trigger asChild>
         <Button
           variant="ghost"

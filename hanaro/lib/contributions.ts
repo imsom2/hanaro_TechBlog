@@ -1,27 +1,36 @@
-import { prisma } from "@/lib/prisma";
+export function getYearDays(year: number) {
+  const days: string[] = [];
+  const date = new Date(`${year}-01-01T00:00:00.000Z`);
 
-export async function getContributions(year: number) {
-  const start = new Date(`${year}-01-01`);
-  const end = new Date(`${year}-12-31`);
-
-  const posts = await prisma.post.findMany({
-    where: {
-      updatedAt: {
-        gte: start,
-        lte: end,
-      },
-    },
-    select: {
-      updatedAt: true,
-    },
-  });
-
-  const map: Record<string, number> = {};
-
-  for (const post of posts) {
-    const key = post.updatedAt.toISOString().slice(0, 10); // YYYY-MM-DD
-    map[key] = (map[key] || 0) + 1;
+  while (date.getUTCFullYear() === year) {
+    days.push(date.toISOString().slice(0, 10));
+    date.setUTCDate(date.getUTCDate() + 1);
   }
+  return days;
+}
 
-  return map;
+export function getLevel(count: number) {
+  if (count === 0) return 0;
+  if (count <= 1) return 1;
+  if (count <= 3) return 2;
+  if (count <= 5) return 3;
+  return 4;
+}
+
+export function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export function getMonthLabel(date: string) {
+  return new Date(date).toLocaleString("en-US", { month: "short" });
+}
+
+export function chunk<T>(arr: T[], size: number) {
+  const res: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) res.push(arr.slice(i, i + size));
+  return res;
 }

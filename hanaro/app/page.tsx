@@ -1,7 +1,7 @@
 import { ContributionGrid } from "@/components/ContributionGrid";
 import { ContributionLegend } from "@/components/ContributionLegend";
-import { getContributions } from "@/lib/contributions";
-import { getYearDays } from "@/lib/date";
+import { getYearDays } from "@/lib/contributions";
+import { getContributions } from "@/lib/contributions.action";
 
 export default async function HomePage() {
   const year = 2026;
@@ -16,7 +16,7 @@ export default async function HomePage() {
         {total} contributions in {year}
       </h2>
 
-      <div className="overflow-x-auto">
+      <div className="w-full overflow-x-auto">
         <ContributionGrid days={days} data={data} />
       </div>
 
