@@ -3,10 +3,10 @@
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { useReducer } from "react";
+import { logout } from "@/app/sign/api/sign-out.action";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { logout } from "@/lib/sign.action";
+import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
