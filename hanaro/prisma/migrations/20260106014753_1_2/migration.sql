@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `Comment` ADD COLUMN `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    MODIFY `comment` INTEGER UNSIGNED NULL;
+
+-- AlterTable
+ALTER TABLE `Post` ADD COLUMN `isDeleted` BOOLEAN NOT NULL DEFAULT false;

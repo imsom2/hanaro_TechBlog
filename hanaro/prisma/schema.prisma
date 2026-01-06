@@ -16,11 +16,12 @@ model Category {
 model Comment {
   id            Int       @id @default(autoincrement()) @db.UnsignedInt
   createdAt     DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime  @default(now()) @db.Timestamp(0) @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(0)
   content       String    @db.Text
   user          Int       @db.UnsignedInt
   post          Int       @db.UnsignedInt
   comment       Int?      @db.UnsignedInt
+  isDeleted     Boolean   @default(false)
   User          User      @relation(fields: [user], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_1")
   Post          Post      @relation(fields: [post], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_2")
   Comment       Comment?  @relation("CommentToComment", fields: [comment], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_ibfk_3")
@@ -44,9 +45,10 @@ model Likes {
 model Post {
   id           Int            @id @default(autoincrement()) @db.UnsignedInt
   createdAt    DateTime       @default(now()) @db.Timestamp(0)
-  updatedAt    DateTime       @default(now()) @db.Timestamp(0) @updatedAt
+  updatedAt    DateTime       @default(now()) @updatedAt @db.Timestamp(0)
   title        String         @db.VarChar(31)
   content      String?        @db.Text
+  isDeleted    Boolean        @default(false)
   Comment      Comment[]
   Likes        Likes[]
   PostCategory PostCategory[]
@@ -62,11 +64,9 @@ model PostCategory {
   @@index([category], map: "fk_PostCategory_category")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model StopWord {
-  value String? @db.VarChar(31)
-
-  @@ignore
+  id    Int    @id @default(autoincrement()) @db.UnsignedInt
+  value String @unique(map: "uq_stopWord_value") @db.VarChar(31)
 }
 
 model User {

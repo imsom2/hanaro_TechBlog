@@ -1,34 +1,16 @@
 "use client";
-
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useActionState } from "react";
-import { regist } from "@/app/sign/api/sign-up.action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { regist } from "@/lib/sign/sign-up.action";
 
-export default function RegistForm() {
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("callbackUrl") || "/hello";
+export default function RegistForm({ callbackUrl }: { callbackUrl: string }) {
+  const router = useRouter();
+  const redirectTo = callbackUrl || "/";
 
-  const defaultError =
-    process.env.NODE_ENV === "development"
-      ? {
-          error: {},
-          data: {
-            email: "sico@gmail.com",
-            name: "sico",
-            passwd: "1212",
-            passwd2: "1212",
-          },
-        }
-      : undefined;
-
-  const [validError, makeRegist, isPending] = useActionState(
-    regist,
-    defaultError,
-  );
-  if (validError) console.log("validError>>", validError);
+  const [validError, makeRegist, isPending] = useActionState(regist, undefined);
 
   return (
     <div className="grid place-items-center">
@@ -106,11 +88,20 @@ export default function RegistForm() {
         </div>
 
         <div className="flex justify-center gap-5">
-          <Button variant={"outline"} type="reset">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              router.push(
+                `/sign/in?callbackUrl=${encodeURIComponent(redirectTo)}`,
+              )
+            }
+          >
             Cancel
           </Button>
+
           <Button type="submit" disabled={isPending}>
-            Regist {isPending && "..."}
+            Regist {isPending ? "..." : ""}
           </Button>
         </div>
       </form>

@@ -1,10 +1,8 @@
-import NextAuth, { AuthError } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Github from "next-auth/providers/github";
-import { prisma } from "./prisma";
-import { comparePassword } from "./validator";
-
-// console.log("🔐 AUTH_SECRET:", process.env.AUTH_SECRET);
+import { prisma } from "@/lib/prisma";
+import { comparePassword } from "@/lib/validator";
 
 export const {
   handlers: { GET, POST },
@@ -14,24 +12,14 @@ export const {
 } = NextAuth({
   providers: [
     Credentials({
-      name: "Email",
-      credentials: {
-        email: { label: "이메일", type: "email", placeholder: "user@mail.com" },
-        passwd: {
-          label: "Password",
-          type: "password",
-          placeholder: "password...",
-        },
-      },
       async authorize(credentials) {
-        const email = (credentials?.email as string) ?? "";
-        const passwd = (credentials?.passwd as string) ?? "";
+        const email = String(credentials?.email ?? "").trim();
+        const passwd = String(credentials?.passwd ?? "");
+
+        if (!email || !passwd) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
-
-        if (!user) return null;
-
-        if (!user.passwd) return null;
+        if (!user || !user.passwd) return null;
 
         const ok = await comparePassword(passwd, user.passwd);
         if (!ok) return null;
@@ -47,76 +35,70 @@ export const {
     }),
     Github,
   ],
+
   callbacks: {
     async signIn({ user, account }) {
-      const { email, passwd, name, image } = user;
-      let oldUser =
-        email && (await prisma.user.findUnique({ where: { email } }));
-      console.log("🚀 ~ oldUser:", oldUser);
+      if (account?.provider === "credentials") return true;
 
-      if (account?.provider === "credentials") {
-        if (!oldUser)
-          throw makeAuthError("EmailSignInError", "Not Exists Email");
+      const email = user.email;
+      const name = user.name;
 
-        if (
-          passwd &&
-          oldUser.passwd &&
-          !(await comparePassword(passwd, oldUser.passwd))
-        )
-          throw makeAuthError("EmailSignInError", "Invalid Email or Password");
-      } else {
-        if (!oldUser) {
-          if (!email || !name)
-            throw makeAuthError("OAuthAccountNotLinked", "Need email and name");
+      if (!email || !name) return false;
 
-          oldUser = await prisma.user.create({
-            data: { email, name, image },
-          });
-        }
+      let dbUser = await prisma.user.findUnique({ where: { email } });
+
+      if (!dbUser) {
+        dbUser = await prisma.user.create({
+          data: {
+            email,
+            name,
+            image: user.image,
+          },
+        });
       }
 
-      user.id = String(oldUser.id);
-      user.name = oldUser.name;
-      user.image = oldUser.image;
-      user.isadmin = oldUser.isadmin;
+      user.id = String(dbUser.id);
+      user.name = dbUser.name;
+      user.image = dbUser.image;
+      user.isadmin = dbUser.isadmin;
 
       return true;
     },
+
     async jwt({ token, user, trigger, session }) {
-      const userData = trigger === "update" ? session : user;
-      if (userData) {
-        token.id = userData.id;
-        token.email = userData.email;
-        token.name = userData.name;
-        token.image = userData.image;
-        token.isadmin = userData.isadmin;
+      // session.update() 같은 케이스
+      const u = trigger === "update" ? session?.user : user;
+
+      if (u) {
+        token.id = u.id;
+        token.email = u.email;
+        token.name = u.name;
+        token.image = u.image;
+        token.isadmin = u.isadmin;
       }
+
       return token;
     },
+
     async session({ session, token }) {
-      if (token) {
-        session.user.id = String(token.id);
-        session.user.email = String(token.email);
-        session.user.name = token.name;
-        session.user.image = String(token.image || token.picture);
-        session.user.isadmin = token.isadmin;
+      if (session.user) {
+        session.user.id = String(token.id ?? "");
+        session.user.email = String(token.email ?? "");
+        session.user.name = token.name ?? null;
+        session.user.image = String(token.image ?? token.picture ?? "");
+        session.user.isadmin = Boolean(token.isadmin);
       }
       return session;
     },
   },
+
   pages: {
     signIn: "/sign/in",
     error: "/sign/in",
   },
-  session: {
-    strategy: "jwt",
-  },
+
+  session: { strategy: "jwt" },
+
   trustHost: true,
   jwt: { maxAge: 30 * 60 },
 });
-
-const makeAuthError = (type: AuthError["type"], message?: string) => {
-  const err = new AuthError(message);
-  err.type = type;
-  return err;
-};

@@ -1,30 +1,64 @@
-import Link from "next/link";
+"use client";
 
-type Category = { id: number; title: string; count: number };
+import { useRouter, useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
+type Prop = {
+  total: number;
+  categories: { id: number; title: string; count: number }[];
+  activeCategory: string;
+};
 export default function CategorySidebar({
   total,
   categories,
-}: {
-  total: number;
-  categories: Category[];
-}) {
-  return (
-    <aside className="space-y-2 text-sm">
-      <Link href="/" className="block font-semibold text-green-600">
-        전체보기 ({total})
-      </Link>
+  activeCategory,
+}: Prop) {
+  const router = useRouter();
+  const params = useSearchParams();
 
-      {categories.map((c) => (
-        <Link
-          key={c.id}
-          href={`/category/${c.id}`}
-          className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
-        >
-          <span>{c.title}</span>
-          <span>({c.count})</span>
-        </Link>
-      ))}
+  const go = (cat: string) => {
+    const sp = new URLSearchParams(params.toString());
+    if (cat === "all") sp.delete("category");
+    else sp.set("category", cat);
+
+    router.push(`/?${sp.toString()}`);
+    router.refresh();
+  };
+
+  return (
+    <aside className="space-y-4">
+      <button
+        type="button"
+        onClick={() => go("all")}
+        className={cn(
+          "flex w-full items-center justify-between text-left text-sm",
+          activeCategory === "all"
+            ? "font-semibold text-green-600"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <span>전체보기</span>
+        <span>({total})</span>
+      </button>
+
+      <div className="space-y-3">
+        {categories.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => go(c.title)}
+            className={cn(
+              "flex w-full items-center justify-between text-left",
+              activeCategory === c.title
+                ? "font-medium text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <span>{c.title}</span>
+            <span>({c.count})</span>
+          </button>
+        ))}
+      </div>
     </aside>
   );
 }

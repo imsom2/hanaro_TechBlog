@@ -1,52 +1,77 @@
-// app/posts/[id]/page.tsx
-
 import { notFound } from "next/navigation";
-import { getPostDetail } from "@/app/posts/api/post.action";
-import CommentForm from "@/components/post/CommentForm";
-import CommentList from "@/components/post/CommentList";
+
+import CommentForm from "@/components/post/comment/CommentForm";
+import CommentList from "@/components/post/comment/CommentList";
 import PostActions from "@/components/post/PostActions";
 import PostHeader from "@/components/post/PostHeader";
 import { auth } from "@/lib/auth";
+import { getPostDetail } from "@/lib/posts/post.action";
 
-export default async function PostDetailPage({
-  params,
-}: {
+type Props = {
   params: Promise<{ id: string }>;
-}) {
+};
+
+export default async function PostDetailPage({ params }: Props) {
   const { id } = await params;
+
   const postId = Number(id);
-  if (!postId) notFound();
+  if (!Number.isFinite(postId) || postId <= 0) notFound();
 
-  const session = await auth();
-  const isLoggedIn = !!session?.user?.id;
-  const userId = isLoggedIn ? Number(session!.user!.id) : null;
+  // 세션/DB 조회는 서로 독립이므로 병렬로 실행 (응답 속도 개선)
+  const [session, post] = await Promise.all([auth(), getPostDetail(postId)]);
 
-  const post = await getPostDetail(postId);
   if (!post) notFound();
 
-  const tags = post.PostCategory.map((pc) => pc.Category.title);
+  const userId = session?.user?.id ? Number(session.user.id) : null;
+  const isLoggedIn = userId != null;
+
+  const categories = post.PostCategory.map((pc) => pc.Category.title);
+
+  // soft delete 반영된 댓글 수
+  const commentCount = post.Comment.reduce(
+    (acc, c) => acc + (c.isDeleted ? 0 : 1),
+    0,
+  );
 
   const likeCount = post.Likes.length;
-  const commentCount = post.Comment.length;
 
+  // 내가 좋아요 눌렀는지
   const isLiked = userId ? post.Likes.some((l) => l.user === userId) : false;
+
+  const comments = post.Comment.map((c) => ({
+    ...c,
+    createdAt:
+      typeof c.createdAt === "string" ? c.createdAt : c.createdAt.toISOString(),
+    updatedAt:
+      typeof c.updatedAt === "string" ? c.updatedAt : c.updatedAt.toISOString(),
+    User: c.User
+      ? {
+          id: c.User.id,
+          name: c.User.name,
+          email: c.User.email,
+          image: c.User.image,
+          isadmin: c.User.isadmin,
+        }
+      : null,
+  }));
+
+  const isAdmin = !!session?.user?.isadmin;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 py-6">
       <PostHeader
+        postId={post.id}
         title={post.title}
-        tags={tags}
+        categories={categories}
         createdAt={post.createdAt}
         updatedAt={post.updatedAt}
-        canEdit={!!session?.user?.isadmin} // 관리자만 수정 보이게(원하면 작성자 조건 추가)
+        canEdit={isAdmin}
       />
 
-      {/* 본문 */}
       <article className="prose prose-neutral max-w-none">
         <p className="whitespace-pre-wrap">{post.content ?? ""}</p>
       </article>
 
-      {/* 좋아요 + 댓글 */}
       <PostActions
         postId={post.id}
         likeCount={likeCount}
@@ -55,15 +80,13 @@ export default async function PostDetailPage({
         isLiked={isLiked}
       />
 
-      {/* 댓글 작성 */}
       <CommentForm postId={post.id} isLoggedIn={isLoggedIn} />
 
-      {/* 댓글 목록 */}
       <CommentList
         postId={post.id}
-        comments={post.Comment}
+        comments={comments}
         sessionUserId={session?.user?.id}
-        isAdmin={!!session?.user?.isadmin}
+        isAdmin={isAdmin}
       />
     </div>
   );

@@ -2,21 +2,22 @@
 
 import { Heart, MessageCircle } from "lucide-react";
 import { useTransition } from "react";
-import { toggleLike } from "@/app/posts/api/like.action";
+import { toggleLike } from "@/lib/posts/like.action";
 
+type Prop = {
+  postId: number;
+  likeCount: number;
+  commentCount: number;
+  isLoggedIn: boolean;
+  isLiked: boolean;
+};
 export default function PostActions({
   postId,
   likeCount,
   commentCount,
   isLoggedIn,
   isLiked,
-}: {
-  postId: number;
-  likeCount: number;
-  commentCount: number;
-  isLoggedIn: boolean;
-  isLiked: boolean;
-}) {
+}: Prop) {
   const [pending, start] = useTransition();
 
   return (

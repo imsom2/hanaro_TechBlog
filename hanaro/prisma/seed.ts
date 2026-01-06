@@ -1,79 +1,161 @@
+// prisma/seed.ts
 import { prisma } from "@/lib/prisma";
 import { encryptPassword } from "@/lib/validator";
 
-const categories = ["JS", "TS", "DB", "React", "Next"];
+const CATEGORIES = ["JS", "TS", "DB", "React", "Next"];
+const USER_COUNT = 50;
+const POSTS_PER_USER = 5;
+const PASSWORD = "1234";
 
-const data = [
-  {
-    name: "hong",
-    email: "hong@test.com",
-    passwd: "1234",
-    categories: ["JS", "TS"],
-    post: {
-      title: "post1",
-      content: "첫 번째 게시글",
-    },
-  },
-  {
-    name: "kim",
-    email: "kim@test.com",
-    passwd: "1234",
-    categories: ["Next"],
-    post: {
-      title: "post2",
-      content: "두 번째 게시글",
-    },
-  },
-];
+const rand = (n: number) => Math.floor(Math.random() * n);
+
+function randomDateIn2026() {
+  const start = new Date("2026-01-01T00:00:00Z").getTime();
+  const end = new Date("2026-12-31T23:59:59Z").getTime();
+  return new Date(start + Math.random() * (end - start));
+}
+
+function pickOne<T>(arr: T[]) {
+  return arr[rand(arr.length)];
+}
 
 async function main() {
-  for (const title of categories) {
-    const category = await prisma.category.upsert({
-      where: { title },
-      update: {},
-      create: { title },
-    });
-    console.log("category", category);
-  }
+  // 1) 카테고리
+  await prisma.category.createMany({
+    data: CATEGORIES.map((title) => ({ title })),
+    skipDuplicates: true,
+  });
 
-  // 2) 유저 + 포스트 + 카테고리 연결
-  for (const item of data) {
-    const hashed = await encryptPassword(item.passwd);
-    const user = await prisma.user.upsert({
-      where: { email: item.email },
-      update: {
-        passwd: hashed,
-      },
-      create: {
-        name: item.name,
-        email: item.email,
-      },
-    });
-    console.log("user", user);
+  const categoryRows = await prisma.category.findMany({
+    select: { id: true },
+  });
 
-    const post = await prisma.post.create({
-      data: {
-        title: item.post.title,
-        content: item.post.content,
-        PostCategory: {
-          create: item.categories.map((title) => ({
-            Category: {
-              connect: { title },
-            },
-          })),
+  // 2) 유저
+  const hashed = await encryptPassword(PASSWORD);
+
+  await prisma.user.createMany({
+    data: Array.from({ length: USER_COUNT }, (_, i) => ({
+      name: `user${i + 1}`,
+      email: `user${i + 1}@test.com`,
+      passwd: hashed,
+      isadmin: false,
+      image: null,
+    })),
+    skipDuplicates: true,
+  });
+
+  const users = await prisma.user.findMany({
+    where: { email: { endsWith: "@test.com" } },
+    select: { id: true, name: true, email: true },
+    orderBy: { id: "asc" },
+  });
+
+  let postCount = 0;
+  let commentCount = 0;
+  let likeCount = 0;
+
+  // 3) 글 + 댓글/좋아요
+  for (const u of users) {
+    for (let i = 0; i < POSTS_PER_USER; i++) {
+      const createdAt = randomDateIn2026();
+
+      // 카테고리 1~2개(중복 방지)
+      const picked = new Set<number>();
+      picked.add(pickOne(categoryRows).id);
+      if (Math.random() < 0.3) picked.add(pickOne(categoryRows).id);
+
+      // 글 생성
+      const post = await prisma.post.create({
+        data: {
+          title: `${u.name}의 글 ${i + 1}`,
+          content: `seed content - ${u.email} - #${i + 1}`,
+          createdAt,
+          updatedAt: createdAt,
+          PostCategory: {
+            create: [...picked].map((categoryId) => ({
+              Category: { connect: { id: categoryId } },
+            })),
+          },
         },
-      },
-    });
-    console.log("post", post);
+        select: { id: true },
+      });
+      postCount++;
+
+      // 댓글
+      const topCommentN = rand(4);
+      const topCommentIds: number[] = [];
+
+      for (let c = 0; c < topCommentN; c++) {
+        const writer = pickOne(users);
+        const cAt = randomDateIn2026();
+
+        const top = await prisma.comment.create({
+          data: {
+            post: post.id,
+            user: writer.id,
+            comment: null,
+            content: `댓글 ${c + 1} - post#${post.id}`,
+            createdAt: cAt,
+            updatedAt: cAt,
+            isDeleted: false,
+          },
+          select: { id: true },
+        });
+
+        topCommentIds.push(top.id);
+        commentCount++;
+      }
+
+      // 답글
+      if (topCommentIds.length > 0 && Math.random() < 0.4) {
+        const parentId = pickOne(topCommentIds);
+        const writer = pickOne(users);
+        const rAt = randomDateIn2026();
+
+        await prisma.comment.create({
+          data: {
+            post: post.id,
+            user: writer.id,
+            comment: parentId,
+            content: `대댓글 - parent#${parentId}`,
+            createdAt: rAt,
+            updatedAt: rAt,
+            isDeleted: false,
+          },
+        });
+        commentCount++;
+      }
+
+      // 좋아요
+      const likeN = rand(6);
+      const likedUsers = new Set<number>();
+
+      for (let l = 0; l < likeN; l++) {
+        likedUsers.add(pickOne(users).id);
+      }
+
+      if (likedUsers.size > 0) {
+        await prisma.likes.createMany({
+          data: [...likedUsers].map((userId) => ({
+            user: userId,
+            post: post.id,
+          })),
+          skipDuplicates: true,
+        });
+        likeCount += likedUsers.size;
+      }
+    }
   }
+
+  console.log(
+    `seed done: users=${users.length}, posts=${postCount}, comments=${commentCount}, likes=${likeCount}`,
+  );
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
+  .then(async () => prisma.$disconnect())
   .catch(async (e) => {
-    console.error("PrismaError>>", e);
+    console.error("seed error:", e);
     await prisma.$disconnect();
     process.exit(1);
   });

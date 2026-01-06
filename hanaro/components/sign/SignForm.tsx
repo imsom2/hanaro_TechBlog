@@ -1,48 +1,39 @@
 "use client";
 
 import type { Route } from "next";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useActionState } from "react";
-import { loginEmail } from "@/app/sign/api/sign-in.action";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { ValidError } from "@/lib/validator";
+import { type LoginState, loginEmailAction } from "@/lib/sign/sign-in.action";
 
-export default function SignForm() {
+export default function SignForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("callbackUrl") || "/";
+  const redirectTo = callbackUrl || "/";
 
-  const defaultError =
-    process.env.NODE_ENV === "development"
-      ? {
-          error: {},
-          data: {
-            email: "hong@test.com",
-            passwd: "1234",
-          },
-        }
-      : undefined;
-
-  const [validError, login, isPending] = useActionState(
-    async (_: ValidError | undefined, formData: FormData) => {
-      const [err, data] = await loginEmail(formData);
-      console.log("🚀 ~ err:", err, data);
-      if (err) {
-        return err as ValidError;
-      }
-
-      console.log("🚀 ~ redirectTo:", redirectTo);
-      router.push(redirectTo as Route);
-    },
-    defaultError,
+  const [state, action, pending] = useActionState<LoginState, FormData>(
+    loginEmailAction,
+    undefined,
   );
+
+  useEffect(() => {
+    if (state?.ok) {
+      router.replace(redirectTo as Route);
+      router.refresh();
+    }
+  }, [state?.ok, router, redirectTo]);
 
   return (
     <div className="grid place-items-center">
-      <form action={login} className="w-full space-y-3">
+      <form action={action} className="w-full space-y-3">
         <input type="hidden" name="redirectTo" value={redirectTo} />
+
+        {state?.ok === false && (
+          <div className="rounded-md border bg-red-50 p-3 text-sm text-red-600">
+            {state.message}
+          </div>
+        )}
 
         <div className="space-y-1">
           <Label htmlFor="email">email</Label>
@@ -50,13 +41,9 @@ export default function SignForm() {
             id="email"
             name="email"
             type="email"
-            defaultValue={validError?.data.email || ""}
             placeholder="user@email.com"
-            className="w-full"
+            disabled={pending}
           />
-          {validError?.error.email && (
-            <p className="text-red-500">{validError.error.email}</p>
-          )}
         </div>
 
         <div className="space-y-1">
@@ -65,26 +52,23 @@ export default function SignForm() {
             id="passwd"
             name="passwd"
             type="password"
-            defaultValue={validError?.data.passwd || ""}
             placeholder="password..."
+            disabled={pending}
           />
-          {validError?.error.passwd && (
-            <p className="text-red-500">{validError.error.passwd}</p>
-          )}
         </div>
 
         <div className="flex justify-center gap-5">
           <Button
             type="button"
-            variant={"outline"}
-            onClick={() => {
-              router.push(redirectTo as Route);
-            }}
+            variant="outline"
+            onClick={() => router.push(redirectTo as Route)}
+            disabled={pending}
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isPending}>
-            LogIn{isPending && "..."}
+
+          <Button type="submit" disabled={pending}>
+            LogIn{pending ? "..." : ""}
           </Button>
         </div>
       </form>

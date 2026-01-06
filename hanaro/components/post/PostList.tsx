@@ -18,7 +18,7 @@ export default function PostList({ posts }: { posts: any[] }) {
           <div className="mt-3 flex flex-wrap gap-2">
             {post.PostCategory.map((pc: any) => (
               <span
-                key={pc.category}
+                key={pc.Category.id}
                 className="rounded-full bg-green-100 px-3 py-1 text-xs text-green-700"
               >
                 {pc.Category.title}
