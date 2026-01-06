@@ -1,37 +1,55 @@
 "use client";
 
-import type { Route } from "next";
-import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useState, useTransition } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { type LoginState, loginEmailAction } from "@/lib/sign/sign-in.action";
 
 export default function SignForm({ callbackUrl }: { callbackUrl: string }) {
-  const router = useRouter();
-  const redirectTo = callbackUrl || "/";
+  const params = useSearchParams();
+  const redirectTo = callbackUrl || params.get("callbackUrl") || "/";
 
-  const [state, action, pending] = useActionState<LoginState, FormData>(
-    loginEmailAction,
-    undefined,
-  );
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (state?.ok) {
-      router.replace(redirectTo as Route);
-      router.refresh();
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") ?? "").trim();
+    const passwd = String(form.get("passwd") ?? "");
+
+    if (!email || !passwd) {
+      setError("이메일과 비밀번호를 입력해주세요.");
+      return;
     }
-  }, [state?.ok, router, redirectTo]);
+
+    start(async () => {
+      const res = await signIn("credentials", {
+        email,
+        passwd,
+        callbackUrl: redirectTo,
+        redirect: false,
+      });
+      if (res?.error) {
+        setError("이메일 또는 비밀번호가 올바르지 않아요.");
+        return;
+      }
+      // 성공
+      window.location.href = redirectTo;
+    });
+  };
 
   return (
     <div className="grid place-items-center">
-      <form action={action} className="w-full space-y-3">
-        <input type="hidden" name="redirectTo" value={redirectTo} />
-
-        {state?.ok === false && (
+      <form onSubmit={onSubmit} className="w-full space-y-3">
+        {error && (
           <div className="rounded-md border bg-red-50 p-3 text-sm text-red-600">
-            {state.message}
+            {error}
           </div>
         )}
 
@@ -58,15 +76,6 @@ export default function SignForm({ callbackUrl }: { callbackUrl: string }) {
         </div>
 
         <div className="flex justify-center gap-5">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push(redirectTo as Route)}
-            disabled={pending}
-          >
-            Cancel
-          </Button>
-
           <Button type="submit" disabled={pending}>
             LogIn{pending ? "..." : ""}
           </Button>
