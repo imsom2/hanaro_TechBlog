@@ -1,6 +1,6 @@
 "use server";
 
-import { signIn } from "@/lib/auth";
+import { signIn } from "@/lib/auth/auth";
 
 export async function loginGithub(formData: FormData) {
   const redirectTo = String(formData.get("redirectTo") ?? "/");

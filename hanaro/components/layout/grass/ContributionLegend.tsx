@@ -1,6 +1,6 @@
 "use client";
 
-import { CONTRIBUTION_COLORS } from "./constants";
+import { CONTRIBUTION_COLORS } from "@/lib/contributions";
 
 export function ContributionLegend() {
   return (

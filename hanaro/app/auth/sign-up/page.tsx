@@ -1,5 +1,5 @@
 import Link from "next/link";
-import RegistForm from "@/components/sign/RegistForm";
+import RegistForm from "@/components/auth/RegistForm";
 
 type SP = { callbackUrl?: string };
 

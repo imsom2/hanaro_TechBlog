@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { GithubLoginButton } from "@/components/sign/GithubLoginButton";
-import SignForm from "@/components/sign/SignForm";
-import { loginGithub } from "@/lib/sign/sign-in.action";
+import { GithubLoginButton } from "@/components/auth/GithubLoginButton";
+import SignForm from "@/components/auth/SignForm";
+import { loginGithub } from "@/lib/auth/sign-in.action";
 
 type SP = { callbackUrl?: string };
 

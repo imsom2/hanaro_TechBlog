@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import PostWriteForm from "@/components/post/PostWriteForm";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { getAllCategories } from "@/lib/posts/category.action";
 import { getPostDetail } from "@/lib/posts/post.action";
 

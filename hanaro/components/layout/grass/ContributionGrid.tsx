@@ -12,8 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatDate } from "@/lib/contributions";
-import { getColorClass } from "./constants";
+import { formatDate, getColorClass } from "@/lib/contributions";
 
 type Props = {
   days: string[]; // 하루 단위 문자열 배열 2026-01-06

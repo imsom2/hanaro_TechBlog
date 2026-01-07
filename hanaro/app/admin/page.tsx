@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import UserSearchBar from "@/components/admin/UserSearchBar";
 import UserTable from "@/components/admin/UserTable";
 import { getUsers } from "@/lib/admin/user.action";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 
 type SP = { q?: string };
 

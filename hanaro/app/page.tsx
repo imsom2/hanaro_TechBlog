@@ -3,7 +3,7 @@ import { ContributionLegend } from "@/components/layout/grass/ContributionLegend
 import CategorySidebar from "@/components/post/CategorySidebar";
 import PostList from "@/components/post/PostList";
 import { getYearDays } from "@/lib/contributions";
-import { getContributions } from "@/lib/contributions.action";
+import { getContributions } from "@/lib/posts/contributions.action";
 import { getCategoriesWithCount, getPostList } from "@/lib/posts/post.action";
 
 type SP = { year?: string; category?: string };

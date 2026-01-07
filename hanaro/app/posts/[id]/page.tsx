@@ -4,7 +4,7 @@ import CommentForm from "@/components/post/comment/CommentForm";
 import CommentList from "@/components/post/comment/CommentList";
 import PostActions from "@/components/post/PostActions";
 import PostHeader from "@/components/post/PostHeader";
-import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth/auth";
 import { getPostDetail } from "@/lib/posts/post.action";
 
 type Props = {
