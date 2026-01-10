@@ -7,7 +7,7 @@ type SP = { q?: string };
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams?: SP | Promise<SP>;
+  searchParams?: SP;
 }) {
   const sp = await Promise.resolve(searchParams ?? {});
   const q = (sp.q ?? "").trim();

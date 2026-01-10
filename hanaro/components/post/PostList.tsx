@@ -1,6 +1,25 @@
 import Link from "next/link";
 
-export default function PostList({ posts }: { posts: any[] }) {
+type PostListItem = {
+  id: number;
+  title: string;
+  content: string | null;
+  createdAt: Date;
+
+  PostCategory: {
+    Category: {
+      id: number;
+      title: string;
+    };
+  }[];
+
+  _count: {
+    Comment: number;
+    Likes: number;
+  };
+};
+
+export default function PostList({ posts }: { posts: PostListItem[] }) {
   return (
     <section className="space-y-8">
       {posts.map((post) => (
@@ -16,7 +35,7 @@ export default function PostList({ posts }: { posts: any[] }) {
           </p>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            {post.PostCategory.map((pc: any) => (
+            {post.PostCategory.map((pc) => (
               <span
                 key={pc.Category.id}
                 className="rounded-full bg-green-100 px-3 py-1 text-xs text-green-700"

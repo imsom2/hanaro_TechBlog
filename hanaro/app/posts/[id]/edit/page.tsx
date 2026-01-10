@@ -24,7 +24,7 @@ export default async function PostEditPage({ params }: PageProps) {
     categoriesPromise,
   ]);
 
-  if (!session?.user?.id) redirect("/sign/in");
+  if (!session?.user?.id) redirect("/auth/sign-in");
 
   if (!post) notFound();
 

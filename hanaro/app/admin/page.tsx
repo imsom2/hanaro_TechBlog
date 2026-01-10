@@ -13,7 +13,7 @@ export default async function AdminPage({
 }) {
   const session = await auth();
 
-  if (!session?.user?.id) redirect("/sign/in");
+  if (!session?.user?.id) redirect("/auth/sign-in");
   if (!session.user.isadmin) redirect("/");
 
   const sp = await Promise.resolve(searchParams ?? {});

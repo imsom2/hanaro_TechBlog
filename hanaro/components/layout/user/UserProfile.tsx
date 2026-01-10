@@ -14,8 +14,6 @@ import {
 } from "../../ui/hover-card";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 
-const DUMMY_PROFILE_IMAGE = "/profile_dummy.png";
-
 // 이름에서 이니셜 뽑기
 function getInitials(name?: string | null) {
   const v = (name ?? "").trim();
@@ -33,13 +31,13 @@ export default function UserProfile({ data }: { data: Session }) {
   const [isOpen, toggleOpen] = useReducer((p) => !p, false);
 
   useEffect(() => {
-    if (!data?.user) router.replace("/sign/in");
+    if (!data?.user) router.replace("/auth/sign-in");
   }, [data?.user, router]);
 
   // user가 없으면 렌더 자체를 막아 UI 깜빡임 방지
   if (!data?.user) return null;
 
-  const profileImg = data.user.image || DUMMY_PROFILE_IMAGE;
+  const profileImg = data.user.image || undefined;
 
   const Comp = isMobile
     ? { Root: Popover, Trigger: PopoverTrigger, Content: PopoverContent }
@@ -81,7 +79,7 @@ export default function UserProfile({ data }: { data: Session }) {
             </p>
 
             <Button
-              onClick={() => signOut({ callbackUrl: "/sign/in" })}
+              onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
               variant="outline"
               size="sm"
             >

@@ -6,13 +6,13 @@ import { getAllCategories } from "@/lib/posts/category.action";
 export default async function NewPostPage() {
   const session = await auth();
 
-  // 로그인 체크
-  if (!session?.user?.id) redirect("/sign/in");
+  // 로그인 안 했으면 로그인 페이지로
+  if (!session?.user?.id) redirect("/auth/sign-in");
 
-  // 관리자만 글 작성
+  // 관리자가 아니면 홈으로
   if (!session.user.isadmin) redirect("/");
 
-  // 카테고리 조회는 lib로 분리
+  // 카테고리 목록 가져오기
   const categories = await getAllCategories();
 
   return (

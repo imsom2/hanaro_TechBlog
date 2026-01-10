@@ -44,7 +44,7 @@ function NavUserAreaInner() {
       ) : isLoggedIn ? (
         <UserProfile data={session} />
       ) : (
-        <Link href="/sign/in" className="text-sm">
+        <Link href="/auth/sign-in" className="text-sm">
           sign in
         </Link>
       )}

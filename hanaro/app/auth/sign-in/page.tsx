@@ -29,7 +29,7 @@ export default async function SignInPage({
       <div className="mt-4 text-center text-sm text-muted-foreground">
         계정이 없나요?{" "}
         <Link
-          href={`/sign/up?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          href={`/auth/sign-up?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           className="font-medium text-blue-600 hover:underline"
         >
           회원가입

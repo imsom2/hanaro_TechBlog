@@ -8,7 +8,7 @@ export async function proxy(req: NextRequest) {
   if (!didLogin) {
     const callbackUrl = encodeURIComponent(req.nextUrl.pathname);
     return NextResponse.redirect(
-      new URL(`/sign?callbackUrl=${callbackUrl}`, req.url),
+      new URL(`/auth?callbackUrl=${callbackUrl}`, req.url),
     );
   }
 

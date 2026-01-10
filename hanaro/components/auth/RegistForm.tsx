@@ -93,7 +93,7 @@ export default function RegistForm({ callbackUrl }: { callbackUrl: string }) {
             variant="outline"
             onClick={() =>
               router.push(
-                `/sign/in?callbackUrl=${encodeURIComponent(redirectTo)}`,
+                `/auth/sign-in?callbackUrl=${encodeURIComponent(redirectTo)}`,
               )
             }
           >

@@ -24,7 +24,7 @@ function fmtKST(input: string | Date) {
 function makeSnippet(content: string | null, max = 120) {
   const text = (content ?? "").trim();
   if (text.length <= max) return text;
-  return text.slice(0, max) + "...";
+  return `${text.slice(0, max)}...`;
 }
 
 export default function SearchResultList({ posts }: { posts: SearchPost[] }) {

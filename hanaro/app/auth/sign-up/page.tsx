@@ -20,7 +20,7 @@ export default async function SignUpPage({
       <div className="mt-4 text-center text-sm text-muted-foreground">
         이미 계정이 있나요?{" "}
         <Link
-          href={`/sign/in?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          href={`/auth/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           className="font-medium text-blue-600 hover:underline"
         >
           로그인

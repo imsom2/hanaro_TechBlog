@@ -93,8 +93,8 @@ export const {
   },
 
   pages: {
-    signIn: "/sign/in",
-    error: "/sign/in",
+    signIn: "/auth/sign-in",
+    error: "/auth/sign-in",
   },
 
   session: { strategy: "jwt" },
